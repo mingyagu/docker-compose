@@ -19,18 +19,26 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV STIGMA_HOME="/STIGMA" \
-    STIGMA_WORK="/STIGMA/work"
+ENV PROJECT_HOME="/WORKSPACE" \
+    PROJECT_WORK="/WORKSPACE/work" \
+    GRAFANA_HOME="/WORKSPACE/GRAFANA"  \
+    GRAFANA_LOGS="/WORKSPACE/GRAFANA/logs"
 
 # Make default directory
-RUN mkdir -p $STIGMA_WORK && chown -R stigma:stigma /STIGMA
+RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
+    mkdir -p $PROJECT_HOME/GRAFANA/logs
 
+# Install grafana, supervisor
 ADD ./grafana.repo	/etc/yum.repos.d/grafana.repo
-RUN yum install -y grafana; yum clean all
+RUN yum install -y grafana supervisor; yum clean all
 
-ADD ./start.sh  $STIGMA_WORK/start.sh
-RUN chmod 755 $STIGMA_WORK/start.sh
+ADD ./post.sh 	 $PROJECT_WORK/post.sh
+ADD ./supervisord.conf	$PROJECT_WORK/supervisord.conf
+RUN chmod 755	 $PROJECT_WORK/post.sh
+
+# COPY supervisord.conf
+COPY ./supervisord.conf	/etc/supervisord.conf
 
 EXPOSE	3000
 
-CMD ["/bin/bash", "/STIGMA/work/start.sh"]
+CMD ["/WORKSPACE/work/post.sh"]

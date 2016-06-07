@@ -24,27 +24,30 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV STIGMA_HOME="/STIGMA" \
-    STIGMA_WORK="/STIGMA/work"
+ENV PROJECT_HOME="/WORKSPACE" \
+    PROJECT_WORK="/WORKSPACE/work" \
+    MYSQL_HOME="/WORKSPACE/MYSQL"  \
+    MYSQL_LOGS="/WORKSPACE/MYSQL/logs"
 
 # Make default directory
-RUN mkdir -p $STIGMA_WORK && chown -R stigma:stigma /STIGMA
+RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
+    mkdir -p $PROJECT_HOME/MYSQL/logs
 
-ADD ./start.sh $STIGMA_WORK/start.sh
-ADD ./config_mysql.sh $STIGMA_WORK/config_mysql.sh
-ADD ./supervisord.conf $STIGMA_WORK/supervisord.conf
+ADD ./post.sh $PROJECT_WORK/post.sh
+ADD ./config_mysql.sh $PROJECT_WORK/config_mysql.sh
+ADD ./supervisord.conf $PROJECT_WORK/supervisord.conf
 
 # COPY supervisord.conf
 COPY ./supervisord.conf /etc/supervisord.conf
 
 # RUN echo %sudo	ALL=NOPASSWD: ALL >> /etc/sudoers
 
-RUN chmod 755 $STIGMA_WORK/start.sh
-RUN chmod 755 $STIGMA_WORK/config_mysql.sh
-RUN $STIGMA_WORK/config_mysql.sh
+RUN chmod 755 $PROJECT_WORK/post.sh
+RUN chmod 755 $PROJECT_WORK/config_mysql.sh
+RUN $PROJECT_WORK/config_mysql.sh
 
 # mysql port
 EXPOSE 3306
 
 # Start Container
-CMD ["/bin/bash", "/STIGMA/work/start.sh"]
+CMD ["/WORKSPACE/work/post.sh"]

@@ -19,14 +19,14 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV STIGMA_HOME="/STIGMA" \
-    STIGMA_WORK="/STIGMA/work"
+ENV PROJECT_HOME="/WORKSPACE" \
+    PROJECT_WORK="/WORKSPACE/work" \
+    NAGIOS_HOME="/WORKSPACE/NAGIOS"  \
+    NAGIOS_LOGS="/WORKSPACE/NAGIOS/logs"
 
 # Make default directory
-RUN mkdir -p $STIGMA_WORK && chown -R stigma:stigma /STIGMA
-
-# Disable SELinux
-#RUN setenforce 0
+RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
+    mkdir -p $PROJECT_HOME/NAGIOS/logs
 
 # install Prerequisites
 RUN yum install httpd php php-cli gcc glibc glibc-common gd gd-devel net-snmp openssl-devel wget unzip -y
@@ -37,23 +37,29 @@ RUN groupadd nagcmd
 RUN usermod -a -G nagcmd nagios
 RUN usermod -a -G nagcmd apache
 
-ADD ./nagiosInstall.sh	$STIGMA_WORK/nagiosInstall.sh
-ADD ./nagiosPlug.sh	$STIGMA_WORK/nagiosPlug.sh
-ADD ./start.sh  $STIGMA_WORK/start.sh
+ADD ./nagiosInstall.sh	$PROJECT_WORK/nagiosInstall.sh
+ADD ./nagiosPlug.sh	$PROJECT_WORK/nagiosPlug.sh
+ADD ./post.sh  $PROJECT_WORK/post.sh
 
-RUN chmod 755 $STIGMA_WORK/nagiosInstall.sh
-RUN chmod 755 $STIGMA_WORK/nagiosPlug.sh
-RUN chmod 755 $STIGMA_WORK/start.sh
+RUN chmod 755 $PROJECT_WORK/nagiosInstall.sh $PROJECT_WORK/nagiosPlug.sh $PROJECT_WORK/post.sh
 
 # Install Nagios shall start
-RUN $STIGMA_WORK/nagiosInstall.sh
+RUN $PROJECT_WORK/nagiosInstall.sh
 
 # Creating a password for nagiosadmin
 RUN htpasswd -cb /usr/local/nagios/etc/htpasswd.users nagiosadmin qwe123
 
 # Install Nagios Plugins
-RUN $STIGMA_WORK/nagiosPlug.sh
+RUN $PROJECT_WORK/nagiosPlug.sh
+
+# Install supervisor
+RUN yum install -y supervisor; yum clean all
+
+ADD ./supervisord.conf	$PROJECT_WORK/supervisord.conf
+
+#COPY supervisord.conf
+COPY ./supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
 
-CMD ["/bin/bash", "/STIGMA/work/start.sh"]
+CMD ["/WORKSPACE/work/post.sh"]

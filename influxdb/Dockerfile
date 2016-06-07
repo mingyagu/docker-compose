@@ -19,25 +19,30 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV STIGMA_HOME="/STIGMA" \
-    STIGMA_WORK="/STIGMA/work"
+ENV PROJECT_HOME="/WORKSPACE" \
+    PROJECT_WORK="/WORKSPACE/work" \
+    INFLUXDB_HOME="/WORKSPACE/INFLUXDB"  \
+    INFLUXDB_LOGS="/WORKSPACE/INFLUXDB/logs"
 
 # Make default directory
-RUN mkdir -p $STIGMA_WORK && chown -R stigma:stigma /STIGMA
+RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
+    mkdir -p $PROJECT_HOME/INFLUXDB/logs
 
 # RPM package from file
 ADD influxdb.repo /etc/yum.repos.d/influxdb.repo
 
-# Install influxdb
-RUN yum install -y influxdb; yum clean all
+# Install influxdb, supervisor
+RUN yum install -y influxdb supervisor; yum clean all
 
-#ADD ./influxdb.conf /etc/influxdb/influxdb.conf
-ADD ./start.sh	$STIGMA_WORK/start.sh
+ADD ./post.sh	$PROJECT_WORK/post.sh
+ADD ./supervisord.conf $PROJECT_WORK/supervisord.conf
+RUN chmod 755 $PROJECT_WORK/post.sh
 
-RUN chmod 755 $STIGMA_WORK/start.sh
+# COPY supervisord.conf
+COPY ./supervisord.conf /etc/supervisord.conf
 
 EXPOSE 80
 EXPOSE 8083
 EXPOSE 8086
 
-CMD ["/bin/bash", "/STIGMA/work/start.sh"]
+CMD ["/WORKSPACE/work/post.sh"]
