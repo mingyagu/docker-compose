@@ -26,7 +26,7 @@ ENV PROJECT_HOME="/app" \
 
 # Make default directory
 RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
-    mkdir -p $PROJECT_HOME/nagios/logs
+    mkdir -p $NAGIOS_HOME/logs
 
 # install Prerequisites
 RUN yum install httpd php php-cli gcc glibc glibc-common gd gd-devel net-snmp openssl-devel wget unzip -y

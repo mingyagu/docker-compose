@@ -20,13 +20,13 @@ RUN mv /etc/localtime /etc/localtime.bak && \
 
 # Set Env
 ENV PROJECT_HOME="/app" \
-    INFLUXDB_HOME="/app/INFLUXDB"  \
-    INFLUXDB_LOGS="/app/INFLUXDB/logs" \
+    INFLUXDB_HOME="/app/influxdb"  \
+    INFLUXDB_LOGS="/app/influxdb/logs" \
     WORK=/work
 
 # Make default directory
 RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
-    mkdir -p $PROJECT_HOME/INFLUXDB/logs
+    mkdir -p $PROJECT_HOME/influxdb/logs
 
 # RPM package from file
 ADD influxdb.repo /etc/yum.repos.d/influxdb.repo

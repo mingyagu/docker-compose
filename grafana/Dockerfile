@@ -26,7 +26,7 @@ ENV PROJECT_HOME="/app" \
 
 # Make default directory
 RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
-    mkdir -p /app/grafana/logs
+    mkdir -p $GRAFANA_HOME/logs
 
 # Install grafana, supervisor
 ADD ./grafana.repo	/etc/yum.repos.d/grafana.repo

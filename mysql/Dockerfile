@@ -27,12 +27,11 @@ RUN mv /etc/localtime /etc/localtime.bak && \
 ENV PROJECT_HOME="/app" \
     MYSQL_HOME="/app/mysql"  \
     MYSQL_LOGS="/app/mysql/logs" \
-    TEMP="/temp" \
     WORK=/work
 
 #make default directory
 RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
-    mkdir -p $MYSQL_LOGS
+    mkdir -p $MYSQL_HOME/logs
 
 ADD ./post.sh $WORK/post.sh
 ADD ./config_mysql.sh $WORK/config_mysql.sh
