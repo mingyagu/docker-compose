@@ -19,26 +19,29 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV PROJECT_HOME="/WORKSPACE" \
-    PROJECT_WORK="/WORKSPACE/work" \
-    GRAFANA_HOME="/WORKSPACE/GRAFANA"  \
-    GRAFANA_LOGS="/WORKSPACE/GRAFANA/logs"
+ENV PROJECT_HOME="/app" \
+    GRAFANA_HOME="/app/grafana"  \
+    GRAFANA_LOGS="/app/grafana/logs" \
+    WORK=/work
 
 # Make default directory
-RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
-    mkdir -p $PROJECT_HOME/GRAFANA/logs
+RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
+    mkdir -p /app/grafana/logs
 
 # Install grafana, supervisor
 ADD ./grafana.repo	/etc/yum.repos.d/grafana.repo
 RUN yum install -y grafana supervisor; yum clean all
 
-ADD ./post.sh 	 $PROJECT_WORK/post.sh
-ADD ./supervisord.conf	$PROJECT_WORK/supervisord.conf
-RUN chmod 755	 $PROJECT_WORK/post.sh
+ADD ./post.sh 	 $WORK/post.sh
+ADD ./supervisord.conf	$WORK/supervisord.conf
+RUN chmod 755	 $WORK/post.sh
 
 # COPY supervisord.conf
 COPY ./supervisord.conf	/etc/supervisord.conf
 
+# compress Application
+RUN cd $WORK && tar cvfz $WORK/grafana.tar.gz $GRAFANA_HOME && rm -rf $PROJECT_HOME
+
 EXPOSE	3000
 
-CMD ["/WORKSPACE/work/post.sh"]
+CMD ["/work/post.sh"]

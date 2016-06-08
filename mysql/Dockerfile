@@ -24,30 +24,35 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV PROJECT_HOME="/WORKSPACE" \
-    PROJECT_WORK="/WORKSPACE/work" \
-    MYSQL_HOME="/WORKSPACE/MYSQL"  \
-    MYSQL_LOGS="/WORKSPACE/MYSQL/logs"
+ENV PROJECT_HOME="/app" \
+    MYSQL_HOME="/app/mysql"  \
+    MYSQL_LOGS="/app/mysql/logs" \
+    TEMP="/temp" \
+    WORK=/work
 
-# Make default directory
-RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
-    mkdir -p $PROJECT_HOME/MYSQL/logs
+#make default directory
+RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
+    mkdir -p $MYSQL_LOGS
 
-ADD ./post.sh $PROJECT_WORK/post.sh
-ADD ./config_mysql.sh $PROJECT_WORK/config_mysql.sh
-ADD ./supervisord.conf $PROJECT_WORK/supervisord.conf
+ADD ./post.sh $WORK/post.sh
+ADD ./config_mysql.sh $WORK/config_mysql.sh
+ADD ./supervisord.conf $WORK/supervisord.conf
 
 # COPY supervisord.conf
 COPY ./supervisord.conf /etc/supervisord.conf
+COPY ./post.sh	$WORK
 
 # RUN echo %sudo	ALL=NOPASSWD: ALL >> /etc/sudoers
 
-RUN chmod 755 $PROJECT_WORK/post.sh
-RUN chmod 755 $PROJECT_WORK/config_mysql.sh
-RUN $PROJECT_WORK/config_mysql.sh
+RUN chmod 755 $WORK/post.sh
+RUN chmod 755 $WORK/config_mysql.sh
+RUN $WORK/config_mysql.sh
+
+# compress Application
+RUN cd $WORK && tar cvfz $WORK/mysql.tar.gz $MYSQL_HOME && rm -rf $PROJECT_HOME
 
 # mysql port
 EXPOSE 3306
 
 # Start Container
-CMD ["/WORKSPACE/work/post.sh"]
+CMD ["/work/post.sh"]

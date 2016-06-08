@@ -19,13 +19,13 @@ RUN mv /etc/localtime /etc/localtime.bak && \
         ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 # Set Env
-ENV PROJECT_HOME="/WORKSPACE" \
-    PROJECT_WORK="/WORKSPACE/work" \
-    INFLUXDB_HOME="/WORKSPACE/INFLUXDB"  \
-    INFLUXDB_LOGS="/WORKSPACE/INFLUXDB/logs"
+ENV PROJECT_HOME="/app" \
+    INFLUXDB_HOME="/app/INFLUXDB"  \
+    INFLUXDB_LOGS="/app/INFLUXDB/logs" \
+    WORK=/work
 
 # Make default directory
-RUN mkdir -p $PROJECT_WORK && chown -R stigma:stigma $PROJECT_HOME && \
+RUN mkdir -p $PROJECT_HOME && mkdir -p $WORK && chown -R stigma:stigma $PROJECT_HOME && \
     mkdir -p $PROJECT_HOME/INFLUXDB/logs
 
 # RPM package from file
@@ -34,15 +34,18 @@ ADD influxdb.repo /etc/yum.repos.d/influxdb.repo
 # Install influxdb, supervisor
 RUN yum install -y influxdb supervisor; yum clean all
 
-ADD ./post.sh	$PROJECT_WORK/post.sh
-ADD ./supervisord.conf $PROJECT_WORK/supervisord.conf
-RUN chmod 755 $PROJECT_WORK/post.sh
+ADD ./post.sh	$WORK/post.sh
+ADD ./supervisord.conf $WORK/supervisord.conf
+RUN chmod 755 $WORK/post.sh
 
 # COPY supervisord.conf
 COPY ./supervisord.conf /etc/supervisord.conf
+
+# compress Application
+RUN cd $WORK && tar cvfz $WORK/influxdb.tar.gz $INFLUXDB_HOME && rm -rf $PROJECT_HOME
 
 EXPOSE 80
 EXPOSE 8083
 EXPOSE 8086
 
-CMD ["/WORKSPACE/work/post.sh"]
+CMD ["/work/post.sh"]
