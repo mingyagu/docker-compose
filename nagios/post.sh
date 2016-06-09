@@ -13,8 +13,10 @@ else
     tar xvfz $WORK/nagios.tar.gz
 fi
 
+# httpd start
+service httpd start
+
 # Start supervisord
-#service httpd start
 #service nagios start
 
 echo "Running the run_supervisor!"

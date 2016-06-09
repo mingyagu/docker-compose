@@ -44,7 +44,6 @@ COPY ./supervisord.conf /etc/supervisord.conf
 # compress Application
 RUN cd $WORK && tar cvfz $WORK/influxdb.tar.gz $INFLUXDB_HOME && rm -rf $PROJECT_HOME
 
-EXPOSE 80
 EXPOSE 8083
 EXPOSE 8086
 

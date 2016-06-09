@@ -10,6 +10,10 @@ chown -R mysql:mysql /var/lib/mysql
 sleep 10
 
 echo "Running the start_mysql function."
-mysqladmin -uroot -ppassword
+mysqladmin -u root password secret
+mysql -u root -psecret -e "create database stigma"
+mysql -u root -psecret -e "GRANT ALL PRIVILEGES ON stigma.* TO 'root'@'%' IDENTIFIED BY 'secret'"
+mysql -u root -psecret -e "FLUSH PRIVILEGES"
 sleep 10
+
 
